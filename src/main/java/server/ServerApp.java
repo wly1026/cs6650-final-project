@@ -33,12 +33,5 @@ public class ServerApp {
             Thread t = new Thread(r);
             serverThreads.add(t);
         }
-
-        // Periodically choose at most 2 servers to kill and restart.
-        while (true) {
-
-
-            // recover all state information from a peer server
-        }
     }
 }
