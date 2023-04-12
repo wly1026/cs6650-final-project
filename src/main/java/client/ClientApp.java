@@ -15,7 +15,7 @@ public class ClientApp {
                 try {
                     Registry registry = LocateRegistry.getRegistry(ports[finalI]);
                     PaxosServer stub = (PaxosServer) registry.lookup("PaxosServer");
-                    Response res = stub.get("aa");
+                    Response res = stub.put("aa", "1");
                     System.out.println(res);
                 } catch (Exception e) {
                     e.printStackTrace();

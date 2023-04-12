@@ -1,27 +1,54 @@
 package common;
 
 import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Objects;
 
-public class Id implements Serializable {
-    private int id;
+public class Id implements Serializable, Comparable<Id> {
+    private int sequenceId;
     private int serverId;
 
     public Id(int id, int serverId) {
-        this.id = id;
+        this.sequenceId = id;
         this.serverId = serverId;
     }
 
-    /**
-     *
-     * @param other
-     * @return true if Id is strictly larger than other id, meaning either the id is larger,
-     * or ids are same but the serverId is larger.
-     */
-    public boolean isLater(Id other) {
-        if (this.id == other.id) {
-            return serverId > other.serverId;
+    public int getSequenceId() {
+        return sequenceId;
+    }
+
+    public void setSequenceId(int id) {
+        this.sequenceId = id;
+    }
+
+
+    @Override
+    public int compareTo(Id o) {
+        if (this.sequenceId == o.sequenceId) {
+            return this.serverId - o.serverId;
         } else {
-            return this.id > other.id;
+            return this.sequenceId - o.sequenceId;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Id{" +
+                "id=" + sequenceId +
+                ", serverId=" + serverId +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Id id1 = (Id) o;
+        return sequenceId == id1.sequenceId && serverId == id1.serverId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sequenceId, serverId);
     }
 }

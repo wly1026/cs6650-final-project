@@ -29,5 +29,7 @@ public class ServerApp {
             };
             new Thread(r).start();
         }
+
+        // Periodically choose at most 2 servers to kill and restart.
     }
 }
