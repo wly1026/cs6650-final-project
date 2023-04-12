@@ -13,7 +13,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 public class PaxosServerImpl implements PaxosServer {
 
-    private static final int maxAttempts = 5;
+    private static final int maxAttempts = 10;
     private Map<String, String> persist;
     private int[] allPorts;
     private int serverId;
@@ -81,7 +81,7 @@ public class PaxosServerImpl implements PaxosServer {
 
     @Override
     public Promise promise(Proposal proposal) throws RemoteException {
-        log.Info("Receives a promise message, proposal: %s", proposal);
+//        log.Info("Receives a promise message, proposal: %s", proposal);
 
         // mimic failure like, the network failure
         if (Math.random() <= 0.1) {
@@ -108,7 +108,7 @@ public class PaxosServerImpl implements PaxosServer {
 
     @Override
     public boolean accept(Proposal proposal) throws RemoteException {
-        log.Info("Receives a accept message, proposal: %s", proposal);
+//        log.Info("Receives a accept message, proposal: %s", proposal);
         if (proposal.getId().compareTo(this.maxId) >= 0) {
             this.accepted = proposal;
             this.maxId = proposal.getId();
@@ -119,7 +119,7 @@ public class PaxosServerImpl implements PaxosServer {
 
     @Override
     public void commit(Proposal proposal) throws RemoteException {
-        log.Info("Receives a commit message, proposal: %s", proposal);
+//        log.Info("Receives a commit message, proposal: %s", proposal);
         if (proposal.getOperation() == Proposal.Operation.DELETE) {
             this.persist.remove(proposal.getKey());
         } else if (proposal.getOperation() == Proposal.Operation.PUT) {
@@ -132,7 +132,8 @@ public class PaxosServerImpl implements PaxosServer {
      * @param proposal
      * @return
      */
-    private boolean runPaxos(Proposal proposal) {
+    private synchronized boolean runPaxos(Proposal proposal) {
+        log.Info("Running Paxos, proposal: %s", proposal);
         // get all acceptors' objects
         List<PaxosServer> acceptors = new ArrayList<>();
         for (int i = 0; i < this.allPorts.length; i++) {
@@ -166,6 +167,7 @@ public class PaxosServerImpl implements PaxosServer {
             }
         }
         if (promised < half) {
+            log.Info("Promise failure, proposal: %s", proposal);
             return false;
         }
 
@@ -187,6 +189,7 @@ public class PaxosServerImpl implements PaxosServer {
             }
         }
         if (accepted < half) {
+            log.Info("Accept failure, proposal: %s", proposal);
             return false;
         }
 
@@ -198,7 +201,7 @@ public class PaxosServerImpl implements PaxosServer {
                 e.printStackTrace();
             }
         }
-
+        log.Info("Run Paxos successfully, proposal %s", proposal);
         return true;
     }
 
