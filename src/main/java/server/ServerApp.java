@@ -13,7 +13,6 @@ public class ServerApp {
     public static void main(String[] args) {
         int[] ports = new int[]{9091, 9092, 9093, 9094, 9095};
         KeyStoreServer[] servers = new KeyStoreServer[5];
-        List<Thread> serverThreads = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             int finalI = i;
             Runnable r = () -> {
@@ -30,8 +29,7 @@ public class ServerApp {
 
                 System.out.printf("Server starts at port %d\n", port);
             };
-            Thread t = new Thread(r);
-            serverThreads.add(t);
+            new Thread(r).run();
         }
     }
 }
