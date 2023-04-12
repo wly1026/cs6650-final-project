@@ -1,7 +1,6 @@
 package common;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Objects;
 
 public class Id implements Serializable, Comparable<Id> {

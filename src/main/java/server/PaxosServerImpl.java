@@ -99,10 +99,10 @@ public class PaxosServerImpl implements PaxosServer {
                 return new Promise(null, Promise.Status.AGREE);
             }
         }
-        // The proposal is too early.
+        // The proposal is too early. The acceptor has accepted more later proposal.
         else {
-            // TODO the larger Id can be returned to tell the proposal to restart with higher id efficiently.
-            return new Promise(null, Promise.Status.REJECTED);
+            // The larger Id can be returned to tell the proposal to restart with higher id efficiently.
+            return new Promise(new Proposal(this.maxId, null, null, null), Promise.Status.REJECTED);
         }
     }
 
@@ -151,10 +151,16 @@ public class PaxosServerImpl implements PaxosServer {
 
         // phase 1: send prepare
         List<Proposal> earlierAcceptedProposals = new ArrayList<>();
+        Id rejectByMaxId = null;
+
         for (PaxosServer acceptor: acceptors) {
             try {
                 Promise promise = acceptor.promise(proposal);
-                if (promise == null || promise.getStatus() == Promise.Status.REJECTED) {
+                if (promise == null) continue;
+                // Promise is rejected due to lower id, adopt a higher id next time.
+                if (promise.getStatus() == Promise.Status.REJECTED
+                        && (rejectByMaxId == null || promise.getProposal().getId().compareTo(proposal.getId()) > 0)) {
+                    rejectByMaxId = promise.getProposal().getId();
                     continue;
                 }
                 promised++;
@@ -168,6 +174,7 @@ public class PaxosServerImpl implements PaxosServer {
         }
         if (promised < half) {
             log.Info("Promise failure, proposal: %s", proposal);
+            if (rejectByMaxId != null) this.maxId = rejectByMaxId;
             return false;
         }
 
